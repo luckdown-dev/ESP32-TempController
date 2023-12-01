@@ -25,7 +25,7 @@ void setup(){
     Serial.println(".local");
   }
 
-  if (!MDNS.begin("ssid")) {
+  if (!MDNS.begin(ssid)) {
       Serial.println("Erro ao iniciar o serviço mDNS!");
       while(1) {
         delay(1000);
