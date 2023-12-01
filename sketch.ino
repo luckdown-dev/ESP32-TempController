@@ -16,7 +16,7 @@ void setup(){
 
   if(!wmanager.autoConnect(ssid, passwd)){
     Serial.println("Falha na conexão");
-    ESP.restart();
+    //ESP.restart();
 
   } else {
     Serial.println("Conectado com sucesso!");
@@ -44,7 +44,6 @@ void setup(){
 }
 
 void loop(){
-
 
 
 }
