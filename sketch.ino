@@ -4,11 +4,15 @@
 #include <WiFiManager.h>
 #include <ESPAsyncWebServer.h>
 
+#define rele 25
+
+// credenciais do AP
 const char *ssid = "ESP32";
 // const char* passwd = "pp12345678";
 
 float temperaturaAlvo = 25.0;
-float temperaturaAtual = 20.0;
+// valor inserido para simular o sensor
+float temperaturaAtual = 10.0;
 bool circuitoLigado = false;
 bool temperaturaAlvoAtingida = false;
 
@@ -24,28 +28,24 @@ int calcularProgresso(float temperaturaAlvo, float temperaturaAtual)
   return static_cast<int>(progresso);
 }
 
-
 void setup()
 {
   Serial.begin(115200);
 
+  pinMode(rele, OUTPUT);
+
   WiFiManager wm;
 
-  while (WiFi.status() != WL_CONNECTED)
+  if (wm.autoConnect(ssid))
   {
-    delay(1000);
-    Serial.println("Connecting to WiFi..");
-
-    if (wm.autoConnect(ssid))
-    {
-      Serial.println("Sucesso ao conectar no AP!");
-    }
-    else
-    {
-      Serial.println("Falha ao conectar no AP");
-    }
+    Serial.println("Sucesso ao conectar no AP!");
+  }
+  else
+  {
+    Serial.println("Falha ao conectar no AP");
   }
 
+  // Serviço mDNS
   if (!MDNS.begin("esp32"))
   {
     Serial.println("Erro ao iniciar o mDNS");
@@ -301,10 +301,16 @@ void setup()
 
 void loop()
 {
+
+  // implementar a atualização do sensor e do gráfico utilizando millis
+
   if (circuitoLigado && !temperaturaAlvoAtingida && temperaturaAtual < temperaturaAlvo)
   {
     // Simulação de leitura do sensor de temperatura
     temperaturaAtual += 0.1;
+
+    // Aciona o RELE
+    digitalWrite(rele, 1);
 
     // Atualizar a barra de progresso e notificar clientes WebSocket
     Serial.println(temperaturaAlvo);
@@ -325,5 +331,9 @@ void loop()
       delay(500);
       temperaturaAlvoAtingida = false;
     }
+  }
+  else
+  {
+    digitalWrite(rele, 0);
   }
 }
