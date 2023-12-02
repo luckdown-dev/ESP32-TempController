@@ -15,7 +15,7 @@ const char *ssid = "ESP32";
 const int intervaloLeitura = 500;
 unsigned long tempoPassado = 0;
 
-float temperaturaAlvo = 25.0;
+float temperaturaAlvo = 60.0;
 // valor inserido para simular o sensor
 float temperaturaAtual = 10.0;
 
@@ -366,35 +366,35 @@ void loop()
     tempoPassado = tempoAtual;
 
     // float temperaturaAtual = analogRead(sensor);
-  }
-
-  if (circuitoLigado && !temperaturaAlvoAtingida && temperaturaAtual < temperaturaAlvo)
-  {
-    // Simulação de leitura do sensor de temperatura
-    temperaturaAtual += 0.1;
-
-    // Aciona o RELE
-    digitalWrite(rele, 1);
 
     // Atualizar a barra de progresso e notificar clientes WebSocket
     int progresso = calcularProgresso(temperaturaAlvo, temperaturaAtual);
     ws.textAll("{\"temperatura\":" + String(temperaturaAtual) + ", \"progresso\":" + String(progresso) + "}");
 
-    delay(1000);
+    if (circuitoLigado && !temperaturaAlvoAtingida)
+    {
+      // liga o RELE
+      digitalWrite(rele, 1);
+      // Simulação de leitura do sensor de temperatura
+      temperaturaAtual += 0.1;
+    }
+    else
+    {
+      digitalWrite(rele, 0);
+    }
 
     // Verificar se a temperatura alvo foi atingida
     if (temperaturaAtual >= temperaturaAlvo)
     {
       temperaturaAlvoAtingida = true;
+      circuitoLigado = false;
 
       // Exibir mensagem no console (pode ser substituído por uma lógica para exibir no HTML)
       Serial.println("Temperatura alvo atingida!");
-      delay(500);
+    } 
+    else 
+    {
       temperaturaAlvoAtingida = false;
     }
-  }
-  else
-  {
-    digitalWrite(rele, 0);
   }
 }
