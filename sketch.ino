@@ -147,13 +147,13 @@ void setup()
       </head>
       <body>
         <div class="container">
-          <p class="legend">Insira a temperatura alvo entre 10.0°C e 70.0°C</p>
+          <p class="legend">Insira a temperatura alvo entre 10.0°C e 60.0°C</p>
           <input type="text" id="tempInput" class="input-field" placeholder="Temperatura alvo" value=""><br>
           <p id="tempAlvo" class="status-field">Temperatura Alvo: <span id="tempAlvoValor"></span>°C</p>
           <button id="registrarBtn" class="button" onclick="registrarTemperatura()">Registrar Temperatura</button><br>
           <button id="ligaDesligaBtn" class="button" onclick="ligaDesligaCircuito()" disabled>Ligar Circuito</button><br>
           <span id="mensagemErro" class="mensagem-erro"></span>
-          <p id="temperaturaAtual" class="status-field">Temperatura Atual: <span id="tempAtualValor">20.0</span>℃</p>
+          <p id="temperaturaAtual" class="status-field">Temperatura Atual: <span id="tempAtualValor"></span>℃</p>
           <button id="reiniciarBtn" class="button" onclick="reiniciarInterface()">Reiniciar</button><br><br>
           <div class="progress-bar-container">
             <div id="progressBar" class="progress-bar"></div>
@@ -202,6 +202,7 @@ void setup()
             if (ligaDesligaBtn.innerHTML === 'Ligar Circuito') {
               ligaDesligaBtn.innerHTML = 'Desligar Circuito';
               ligaDesligaBtn.style.backgroundColor = '#e74c3c';
+
               // Enviar mensagem WebSocket para ligar o circuito
               socket.send(JSON.stringify({ action: 'ON' }));
               console.log('Enviou a mensagem para ligar o circuito');
@@ -209,6 +210,7 @@ void setup()
               ligaDesligaBtn.innerHTML = 'Ligar Circuito';
               ligaDesligaBtn.style.backgroundColor = '#3498db';
               // Enviar mensagem WebSocket para desligar o circuito
+
               socket.send(JSON.stringify({ action: 'OFF' }));
               console.log('Enviou a mensagem para desligar o circuito');
             }
@@ -240,6 +242,7 @@ void setup()
             updateProgressBar(0);
 
             // Enviar mensagem WebSocket para reiniciar no servidor
+            console.log('Enviou a mensagem para reiniciar o circuito');
             socket.send(JSON.stringify({ action: 'RESTART' }));
           }
 
@@ -311,6 +314,10 @@ void setup()
 
           // Atualizar a variável temperaturaAlvo
           temperaturaAlvo = novoAlvo;
+        }
+        // reinicia a simulação do sensor de temperatura
+        else if (message.indexOf("RESTART") != -1){
+          temperaturaAtual = 10.0;
         }
       }
     } });
