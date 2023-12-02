@@ -125,6 +125,11 @@ void setup()
             color: #333;
           }
 
+          .mensagem-erro {
+            font-size: 15px;
+            color: red;
+          }
+
           .progress-bar-container {
             width: 100%;
             background-color: #e0e0e0;
@@ -143,14 +148,13 @@ void setup()
       <body>
         <div class="container">
           <p class="legend">Insira a temperatura alvo entre 10.0°C e 70.0°C</p>
-          <input type="text" id="tempInput" class="input-field" placeholder="Temperatura alvo" value="25.0"><br>
-          <p id="tempAlvo" class="status-field">Temperatura Alvo: <span id="tempAlvoValor">25.0</span>°C</p>
+          <input type="text" id="tempInput" class="input-field" placeholder="Temperatura alvo" value=""><br>
+          <p id="tempAlvo" class="status-field">Temperatura Alvo: <span id="tempAlvoValor"></span>°C</p>
           <button id="registrarBtn" class="button" onclick="registrarTemperatura()">Registrar Temperatura</button><br>
-          <button id="ligaDesligaBtn" class="button" onclick="ligaDesligaCircuito()">Ligar Circuito</button><br>
+          <button id="ligaDesligaBtn" class="button" onclick="ligaDesligaCircuito()" disabled>Ligar Circuito</button><br>
+          <span id="mensagemErro" class="mensagem-erro"></span>
           <p id="temperaturaAtual" class="status-field">Temperatura Atual: <span id="tempAtualValor">20.0</span>℃</p>
-          <button id="reiniciarBtn" class="button" onclick="reiniciarInterface()">Reiniciar</button><br>
-          <br>
-          <br>
+          <button id="reiniciarBtn" class="button" onclick="reiniciarInterface()">Reiniciar</button><br><br>
           <div class="progress-bar-container">
             <div id="progressBar" class="progress-bar"></div>
           </div>
@@ -164,6 +168,10 @@ void setup()
 
             // Atualizar a variável temperaturaAlvo no servidor
             socket.send(JSON.stringify({ action: 'atualizar_alvo', temperatura: tempInput.value }));
+
+            // Habilitar o botão de ligar
+            var ligaDesligaBtn = document.getElementById('ligaDesligaBtn');
+            ligaDesligaBtn.disabled = false;
           }
 
           function handleTemperaturaAlvoAtingida() {
@@ -177,7 +185,20 @@ void setup()
           }
 
           function ligaDesligaCircuito() {
+            var tempInput = document.getElementById('tempInput');
             var ligaDesligaBtn = document.getElementById('ligaDesligaBtn');
+            var mensagemErro = document.getElementById('mensagemErro');
+
+            // Verificar se a temperatura foi registrada
+            if (tempInput.value === "") {
+              // Mostrar a mensagem de erro
+              mensagemErro.innerText = "Registre uma temperatura antes de ligar o circuito.";
+              return;
+            }
+
+            // Limpar a mensagem de erro
+            mensagemErro.innerText = "";
+
             if (ligaDesligaBtn.innerHTML === 'Ligar Circuito') {
               ligaDesligaBtn.innerHTML = 'Desligar Circuito';
               ligaDesligaBtn.style.backgroundColor = '#e74c3c';
@@ -205,11 +226,11 @@ void setup()
           function reiniciarInterface() {
             // Limpar valores e reativar campos
             var tempInput = document.getElementById('tempInput');
-            tempInput.value = '25.0';
+            tempInput.value = '';
             tempInput.disabled = false;
 
             var tempAlvo = document.getElementById('tempAlvoValor');
-            tempAlvo.innerText = '25.0';
+            tempAlvo.innerText = '';
 
             var ligaDesligaBtn = document.getElementById('ligaDesligaBtn');
             ligaDesligaBtn.innerHTML = 'Ligar Circuito';
@@ -247,11 +268,11 @@ void setup()
              {
     if (type == WS_EVT_CONNECT)
     {
-      Serial.println("WebSocket client connected");
+      Serial.println("Cliente WebSocket conectado!");
     }
     else if (type == WS_EVT_DISCONNECT)
     {
-      Serial.println("WebSocket client disconnected");
+      Serial.println("Cliente WebSocket disconectado!");
     }
     else if (type == WS_EVT_DATA)
     {
@@ -313,10 +334,7 @@ void loop()
     digitalWrite(rele, 1);
 
     // Atualizar a barra de progresso e notificar clientes WebSocket
-    Serial.println(temperaturaAlvo);
-    Serial.println(temperaturaAtual);
     int progresso = calcularProgresso(temperaturaAlvo, temperaturaAtual);
-    Serial.println(progresso);
     ws.textAll("{\"temperatura\":" + String(temperaturaAtual) + ", \"progresso\":" + String(progresso) + "}");
 
     delay(1000);
