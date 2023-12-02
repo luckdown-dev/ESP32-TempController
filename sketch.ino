@@ -5,14 +5,20 @@
 #include <ESPAsyncWebServer.h>
 
 #define rele 25
+#define sensor 32
 
 // credenciais do AP
 const char *ssid = "ESP32";
 // const char* passwd = "pp12345678";
 
+// implementação do millis
+const int intervaloLeitura = 500;
+unsigned long tempoPassado = 0;
+
 float temperaturaAlvo = 25.0;
 // valor inserido para simular o sensor
 float temperaturaAtual = 10.0;
+
 bool circuitoLigado = false;
 bool temperaturaAlvoAtingida = false;
 
@@ -33,6 +39,7 @@ void setup()
   Serial.begin(115200);
 
   pinMode(rele, OUTPUT);
+  pinMode(sensor, INPUT);
 
   WiFiManager wm;
 
@@ -136,12 +143,26 @@ void setup()
             border-radius: 5px;
           }
 
+          .progress-value{
+            font-size: 13px;
+          }
           .progress-bar {
             width: 0%;
             height: 20px;
             background-color: #3498db;
             border-radius: 5px;
             transition: width 0.5s ease;
+          }
+          .rodape {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            background-color: #333; /* Cor escura para o rodapé */
+            color: #fff; /* Cor do texto no rodapé */
+            padding: 10px;
+            border-radius: 0 0 10px 10px;
+            box-sizing: border-box;
+            font-size: 11px;
           }
         </style>
       </head>
@@ -153,11 +174,13 @@ void setup()
           <button id="registrarBtn" class="button" onclick="registrarTemperatura()">Registrar Temperatura</button><br>
           <button id="ligaDesligaBtn" class="button" onclick="ligaDesligaCircuito()" disabled>Ligar Circuito</button><br>
           <span id="mensagemErro" class="mensagem-erro"></span>
-          <p id="temperaturaAtual" class="status-field">Temperatura Atual: <span id="tempAtualValor"></span>℃</p>
+          <p id="temperaturaAtual" class="status-field">Temperatura Atual: <span id="tempAtualValor"></span>°C</p>
           <button id="reiniciarBtn" class="button" onclick="reiniciarInterface()">Reiniciar</button><br><br>
           <div class="progress-bar-container">
             <div id="progressBar" class="progress-bar"></div>
           </div>
+          <p id="progressValue" class="progress-value">0%</p>
+          <div class="rodape">© 2023 Amaral&Becker - TRO7M. Todos os direitos reservados.</div>
         </div>
         <script>
           function registrarTemperatura() {
@@ -222,7 +245,10 @@ void setup()
 
           function updateProgressBar(progresso) {
             var progressBar = document.getElementById('progressBar');
+            var progressValue = document.getElementById('progressValue');
+
             progressBar.style.width = progresso + '%';
+            progressValue.innerText = progresso + '%';
           }
 
           function reiniciarInterface() {
@@ -318,6 +344,7 @@ void setup()
         // reinicia a simulação do sensor de temperatura
         else if (message.indexOf("RESTART") != -1){
           temperaturaAtual = 10.0;
+          circuitoLigado = false;
         }
       }
     } });
@@ -331,6 +358,15 @@ void loop()
 {
 
   // implementar a atualização do sensor e do gráfico utilizando millis
+  unsigned long tempoAtual = millis();
+
+  if (tempoAtual - tempoPassado >= intervaloLeitura)
+  {
+
+    tempoPassado = tempoAtual;
+
+    // float temperaturaAtual = analogRead(sensor);
+  }
 
   if (circuitoLigado && !temperaturaAlvoAtingida && temperaturaAtual < temperaturaAlvo)
   {
