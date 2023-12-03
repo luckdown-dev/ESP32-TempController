@@ -183,11 +183,17 @@ void setup()
           <div class="rodape">© 2023 Amaral&Becker - TRO7M. Todos os direitos reservados.</div>
         </div>
         <script>
+          var circuitoLigado = false;
+
           function registrarTemperatura() {
             var tempInput = document.getElementById('tempInput');
             var tempAlvo = document.getElementById('tempAlvoValor');
             tempAlvo.innerText = tempInput.value;
             tempInput.disabled = true;
+
+            // Habilitar o botão de ligar
+            var ligaDesligaBtn = document.getElementById('ligaDesligaBtn');
+            ligaDesligaBtn.disabled = false;
 
             // Atualizar a variável temperaturaAlvo no servidor
             socket.send(JSON.stringify({ action: 'atualizar_alvo', temperatura: tempInput.value }));
@@ -198,7 +204,10 @@ void setup()
           }
 
           function handleTemperaturaAlvoAtingida() {
-            alert("Temperatura alvo atingida!");
+            // Exibir a mensagem de alerta apenas se o circuito estiver ligado
+            if (circuitoLigado) {
+              alert("Temperatura alvo atingida!");
+            }
             var tempInput = document.getElementById('tempInput');
             tempInput.disabled = false;
 
@@ -226,6 +235,9 @@ void setup()
               ligaDesligaBtn.innerHTML = 'Desligar Circuito';
               ligaDesligaBtn.style.backgroundColor = '#e74c3c';
 
+              // Atualizar a variável global circuitoLigado
+              circuitoLigado = true;
+
               // Enviar mensagem WebSocket para ligar o circuito
               socket.send(JSON.stringify({ action: 'ON' }));
               console.log('Enviou a mensagem para ligar o circuito');
@@ -233,6 +245,9 @@ void setup()
               ligaDesligaBtn.innerHTML = 'Ligar Circuito';
               ligaDesligaBtn.style.backgroundColor = '#3498db';
               // Enviar mensagem WebSocket para desligar o circuito
+
+              // Atualizar a variável global circuitoLigado
+              circuitoLigado = false;
 
               socket.send(JSON.stringify({ action: 'OFF' }));
               console.log('Enviou a mensagem para desligar o circuito');
@@ -282,6 +297,9 @@ void setup()
             // Verificar se a temperatura alvo foi atingida
             if (data.temperatura >= parseFloat(document.getElementById('tempInput').value)) {
               handleTemperaturaAlvoAtingida();
+              
+              // Atualizar a variável global circuitoLigado
+              circuitoLigado = false;
             }
           };
         </script>
