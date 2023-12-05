@@ -29,7 +29,7 @@ AsyncWebSocket ws("/ws");
 int calcularProgresso(float temperaturaAlvo, float temperaturaAtual)
 {
   // Calcular a proporção entre a temperatura atual e a temperatura alvo
-  float progresso = map(constrain(temperaturaAtual, 10.0, temperaturaAlvo), 10.0, temperaturaAlvo, 0, 100);
+  float progresso = map(constrain(temperaturaAtual, 0.0, temperaturaAlvo), 0.0, temperaturaAlvo, 0, 100);
 
   return static_cast<int>(progresso);
 }
@@ -187,7 +187,30 @@ void setup()
         <script>
           var circuitoLigado = false;
 
+          function validarIntervalo() {
+            var tempInput = document.getElementById('tempInput');
+            var mensagemErro = document.getElementById('mensagemErro');
+          
+            var temperatura = parseFloat(tempInput.value);
+          
+            if (isNaN(temperatura) || temperatura < 10.0 || temperatura > 60.0) {
+              // Mostrar a mensagem de erro
+              mensagemErro.innerText = "Insira uma temperatura válida entre 10.0°C e 60.0°C.";
+              tempInput.value = ''; // Limpar o campo de entrada
+              return false;
+            } else {
+              // Limpar a mensagem de erro
+              mensagemErro.innerText = "";
+              return true;
+            }
+          }
+
+
           function registrarTemperatura() {
+            if (!validarIntervalo()) {
+              return;
+            }
+              
             var tempInput = document.getElementById('tempInput');
             var tempAlvo = document.getElementById('tempAlvoValor');
             tempAlvo.innerText = tempInput.value;
