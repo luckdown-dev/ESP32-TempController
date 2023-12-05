@@ -17,7 +17,7 @@ unsigned long tempoPassado = 0;
 
 float temperaturaAlvo = 60.0;
 // valor inserido para simular o sensor
-float temperaturaAtual = 10.0;
+float temperaturaAtual = 0.0;
 
 bool circuitoLigado = false;
 bool temperaturaAlvoAtingida = false;
@@ -40,6 +40,8 @@ void setup()
 
   pinMode(rele, OUTPUT);
   pinMode(sensor, INPUT);
+
+  //temperaturaAtual = analogRead(sensor);
 
   WiFiManager wm;
 
@@ -297,7 +299,7 @@ void setup()
             // Verificar se a temperatura alvo foi atingida
             if (data.temperatura >= parseFloat(document.getElementById('tempInput').value)) {
               handleTemperaturaAlvoAtingida();
-              
+
               // Atualizar a variável global circuitoLigado
               circuitoLigado = false;
             }
@@ -361,7 +363,7 @@ void setup()
         }
         // reinicia a simulação do sensor de temperatura
         else if (message.indexOf("RESTART") != -1){
-          temperaturaAtual = 10.0;
+          temperaturaAtual = 0.0;
           circuitoLigado = false;
         }
       }
@@ -383,7 +385,7 @@ void loop()
 
     tempoPassado = tempoAtual;
 
-    // float temperaturaAtual = analogRead(sensor);
+    // temperaturaAtual = analogRead(sensor);
 
     // Atualizar a barra de progresso e notificar clientes WebSocket
     int progresso = calcularProgresso(temperaturaAlvo, temperaturaAtual);
