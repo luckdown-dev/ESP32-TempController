@@ -41,6 +41,8 @@ void setup()
   pinMode(rele, OUTPUT);
   pinMode(sensor, INPUT);
 
+  digitalWrite(rele, 1);
+
   //temperaturaAtual = analogRead(sensor);
 
   WiFiManager wm;
@@ -417,13 +419,13 @@ void loop()
     if (circuitoLigado && !temperaturaAlvoAtingida)
     {
       // liga o RELE
-      digitalWrite(rele, 1);
+      digitalWrite(rele, 0);
       // Simulação de leitura do sensor de temperatura
       temperaturaAtual += 0.1;
     }
     else
     {
-      digitalWrite(rele, 0);
+      digitalWrite(rele, 1);
     }
 
     // Verificar se a temperatura alvo foi atingida
