@@ -4,18 +4,26 @@
 #include <WiFiManager.h>
 #include <ESPAsyncWebServer.h>
 
+// sensor DS18B20
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
 #define rele 25
-#define sensor 32
+#define DS18B20 32
+
+OneWire oneWire(DS18B20);
+
+DallasTemperature sensors(&oneWire);
 
 // credenciais do AP
 const char *ssid = "ESP32";
 // const char* passwd = "pp12345678";
 
 // implementação do millis
-const int intervaloLeitura = 500;
+const int intervaloLeitura = 10;
 unsigned long tempoPassado = 0;
 
-float temperaturaAlvo = 60.0;
+float temperaturaAlvo = 100.0;
 // valor inserido para simular o sensor
 float temperaturaAtual = 0.0;
 
@@ -29,7 +37,7 @@ AsyncWebSocket ws("/ws");
 int calcularProgresso(float temperaturaAlvo, float temperaturaAtual)
 {
   // Calcular a proporção entre a temperatura atual e a temperatura alvo
-  float progresso = map(constrain(temperaturaAtual, 0.0, temperaturaAlvo), 0.0, temperaturaAlvo, 0, 100);
+  float progresso = map(constrain(temperaturaAtual, 40.0, temperaturaAlvo), 40.0, temperaturaAlvo, 0, 100);
 
   return static_cast<int>(progresso);
 }
@@ -39,9 +47,11 @@ void setup()
   Serial.begin(115200);
 
   pinMode(rele, OUTPUT);
-  pinMode(sensor, INPUT);
+  //pinMode(DS18B20, INPUT);
 
-  digitalWrite(rele, 1);
+  digitalWrite(rele, 0);
+
+  sensors.begin();
 
   //temperaturaAtual = analogRead(sensor);
 
@@ -172,7 +182,7 @@ void setup()
       </head>
       <body>
         <div class="container">
-          <p class="legend">Insira a temperatura alvo entre 10.0°C e 60.0°C</p>
+          <p class="legend">Insira a temperatura alvo entre 45.0°C e 100.0°C</p>
           <input type="text" id="tempInput" class="input-field" placeholder="Temperatura alvo" value=""><br>
           <p id="tempAlvo" class="status-field">Temperatura Alvo: <span id="tempAlvoValor"></span>°C</p>
           <button id="registrarBtn" class="button" onclick="registrarTemperatura()">Registrar Temperatura</button><br>
@@ -195,9 +205,9 @@ void setup()
           
             var temperatura = parseFloat(tempInput.value);
           
-            if (isNaN(temperatura) || temperatura < 10.0 || temperatura > 60.0) {
+            if (isNaN(temperatura) || temperatura < 45.0 || temperatura > 100.0) {
               // Mostrar a mensagem de erro
-              mensagemErro.innerText = "Insira uma temperatura válida entre 10.0°C e 60.0°C.";
+              mensagemErro.innerText = "Insira uma temperatura válida entre 45.0°C e 100.0°C.";
               tempInput.value = ''; // Limpar o campo de entrada
               return false;
             } else {
@@ -411,6 +421,9 @@ void loop()
     tempoPassado = tempoAtual;
 
     // temperaturaAtual = analogRead(sensor);
+    sensors.requestTemperatures();
+
+    temperaturaAtual = sensors.getTempCByIndex(0);
 
     // Atualizar a barra de progresso e notificar clientes WebSocket
     int progresso = calcularProgresso(temperaturaAlvo, temperaturaAtual);
@@ -419,13 +432,11 @@ void loop()
     if (circuitoLigado && !temperaturaAlvoAtingida)
     {
       // liga o RELE
-      digitalWrite(rele, 0);
-      // Simulação de leitura do sensor de temperatura
-      temperaturaAtual += 0.1;
+      digitalWrite(rele, 1);
     }
     else
     {
-      digitalWrite(rele, 1);
+      digitalWrite(rele, 0);
     }
 
     // Verificar se a temperatura alvo foi atingida
